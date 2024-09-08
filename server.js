@@ -1,4 +1,4 @@
-const products = [
+let products = [
   { id: 1, name: "Product 1", price: 100 },
   { id: 2, name: "Product 2", price: 200 },
   { id: 3, name: "Product 3", price: 300 },
@@ -13,10 +13,20 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // Routes
+
+// Get all products
 app.get("/products", (req, res) => {
   res.json(products);
 });
 
+// Get one product
+app.get("/products/:id", (req, res) => {
+  const prod = products.find((p) => p.id === parseInt(req.params.id));
+  if (!prod) res.status(404).json({ message: "Product not found" });
+  res.json(prod);
+});
+
+// Add new product
 app.post("/products", (req, res) => {
   const newProduct = {
     id: products.length + 1,
@@ -26,18 +36,30 @@ app.post("/products", (req, res) => {
   res.json(newProduct);
 });
 
-app.put("/products", (req, res) => {
+//Edit a product
+app.put("/products/:id", (req, res) => {
+  const prodExist = products.find((p) => p.id === parseInt(req.params.id));
+  if (!prodExist) {
+    res.send("Product not found");
+  }
+  console.log(prodExist);
+
+  products = products.map((p) =>
+    p.id === parseInt(req.params.id) ? { ...p, ...req.body } : { ...p }
+  );
+  console.log(products);
   res.send("Updating products...");
 });
 
-app.delete("/products", (req, res) => {
-  res.send("Deleting products...");
-});
-
-app.get("/products/:id", (req, res) => {
-  const prod = products.find((p) => p.id === parseInt(req.params.id));
-  if (!prod) res.status(404).json({ message: "Product not found" });
-  res.json(prod);
+// Delete a product
+app.delete("/products/:id", (req, res) => {
+  const prodExist = products.find((p) => p.id === parseInt(req.params.id));
+  if (!prodExist) {
+    res.send("Product not found");
+  }
+  products = products.filter((p) => p.id !== parseInt(req.params.id));
+  console.log(products);
+  res.status(202).json(products);
 });
 
 app.listen(3000);
